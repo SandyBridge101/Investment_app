@@ -1,0 +1,39 @@
+name: Investment App CI/CD
+on:
+  push:
+    branches:
+      - master
+jobs:
+  flutter_test:
+    name: Run FLutter test and analyze codebase
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '12.x'
+      - uses: subosito/flutter-action@v1
+        with:
+          flutter-version: '3.3.3'
+          channel: stable
+      - run: |
+          flutter pub get
+          flutter analyze
+          flutter test
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.target }}-latest
+    strategy:
+      matrix:
+        target: [windows, macos]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: subosito/flutter-action@v1
+        with:
+          flutter-version: '3.3.3'
+          channel: stable
+      - run: flutter config --enable-${{ matrix.target }}-desktop
+      - run: flutter doctor -v
+      - run: flutter pub get
+      - run: flutter clean
+      - run: flutter build ${{ matrix.target }}
